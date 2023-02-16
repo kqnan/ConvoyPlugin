@@ -7,6 +7,10 @@ plugins {
 
 taboolib {
     install("common")
+    install("module-ai")
+    install("module-navigation")
+    install("module-nms")
+    install("module-nms-util")
     install("common-5")
     install("module-chat")
     install("module-configuration")
@@ -21,6 +25,15 @@ taboolib {
 }
 
 repositories {
+    maven("https://jitpack.io")
+    maven("https://maven.aliyun.com/repository/public")
+    maven( "https://maven.aliyun.com/repository/central" )
+    maven ( "https://maven.aliyun.com/repository/google")
+    maven ( "https://maven.aliyun.com/repository/public" )
+    maven(  "https://maven.aliyun.com/repository/gradle-plugin" )
+    maven("https://repo.codemc.io/repository/maven-public/")
+
+
     mavenCentral()
 }
 
