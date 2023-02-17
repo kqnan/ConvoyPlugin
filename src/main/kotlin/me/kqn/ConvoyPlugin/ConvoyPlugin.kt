@@ -19,7 +19,6 @@ import java.util.*
 
 object ConvoyPlugin : Plugin() {
     private val convos = mutableListOf<Convoy>()
-    private val players = mutableMapOf<UUID, PlayerInfo>()
 
 
     override fun onEnable() {
@@ -30,10 +29,7 @@ object ConvoyPlugin : Plugin() {
 
 
     }
-    @SubscribeEvent
-    fun playerLogin(event:PlayerLoginEvent){
-        players[event.player.uniqueId] = PlayerInfo(event.player,null,0.0,false)
-    }
+
     @SubscribeEvent
     fun playerAttack(event: EntityDamageByEntityEvent){
         if(!event.isCancelled&&event.attacker is Player){
@@ -46,47 +42,30 @@ object ConvoyPlugin : Plugin() {
         }
     }
     private fun updateConvoy() {
-        // 遍历所有押送任务，更新生物和玩家状态
+        // 遍历所有押送任务
         for (convo in convos) {
-            if (convo.health <= 0) {
-                // 生物已经死亡，跳过
+            //若任务已过期了，即很久没更新了
+            if(convo.isOutDate()){
+                convo.failConvoy()
                 continue
             }
-            val playersWithConvo = players.filterValues { it.convoy?.id == convo.id }
-
-            if (playersWithConvo.isEmpty()) {
-                // 没有玩家正在押送该镖车，跳过
+            //若搬运工死了
+            if(convo.convoyEntity.currentHealth<=0){
+                convo.failConvoy()
                 continue
             }
-
-            for ((_, playerInfo) in playersWithConvo) {
-                val player = playerInfo.player
-
-                if (player.isDead || !player.isValid || player.location.distance(convo.position) > convo.rarity.distance) {
-                    // 玩家死亡、不在镖车附近或者不在主城范围内，押送失败
-                    failConvoy(playerInfo)
-                    continue
-                }
-
-                // 每5秒扣除一次血量，最多扣除10点
-                if (player.world.time % 100 == 0L) {
-                    convo.health -= minOf(playerInfo.damageDealt, 10.0)
-                }
-
-                // 更新玩家状态
-                playerInfo.convoy = convo
-                playerInfo.damageDealt = 0.0
+            //若没有护送者，或护送者不在范围
+            if(!convo.escort.isOnline||convo.escort.isDead||convo.escort.location.distance(convo.convoyEntity.entity.location)>5){
+                convo.convoyEntity.stopNavigation()//停止行动
+                continue
             }
+            convo.update()//更新任务
+
+
+
+
         }
     }
-    private fun failConvoy(playerInfo: PlayerInfo) {
-        val convoy = playerInfo.convoy
-        if (convoy != null) {
-          //  convo.health = 0.0
-          //  convo.position.world.spawn(convoy.position, Creeper::class.java).health = 0.0
-        }
-        playerInfo.convoy = null
-        playerInfo.damageDealt = 0.0
-    }
+
 
 }

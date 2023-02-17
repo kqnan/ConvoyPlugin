@@ -12,9 +12,13 @@ import taboolib.common5.Baffle
 import taboolib.module.ai.clearGoalAi
 import taboolib.module.ai.clearTargetAi
 import taboolib.module.ai.navigationMove
+import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.collections.HashMap
 
 class ConvoyEntity {
+    var damage=HashMap<UUID,Int>()
+    private set
     var entity:LivingEntity
     private set
     var maxDamagePerAttack:Double
@@ -42,7 +46,9 @@ class ConvoyEntity {
         if(baffle.hasNext()){
             if(PlayerAttackConvoyEntityEvent(attacker,this).call()){
                 baffle.next()
-                currentHealth-= random(maxDamagePerAttack.toInt())
+                val randomDamage=random(maxDamagePerAttack.toInt())
+                currentHealth-= randomDamage
+                damage[attacker.uniqueId]=damage.getOrDefault(attacker.uniqueId,0)+ randomDamage
                 if(currentHealth<=0){
                     ConvoyEntityDeathEvent(this,attacker).call()
                     stopNavigation()

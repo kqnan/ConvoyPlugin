@@ -1,0 +1,4 @@
+
+OnAttack: ''
+OnSuccess: '' #变量escort护送者
+OnFailed: ' ' #变量escort护送者    damagers 根据伤害排名（降序）的玩家列表
